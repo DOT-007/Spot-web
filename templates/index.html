@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Song Downloader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Spotify Song Downloader</h1>
+        <form id="download-form">
+            <input type="text" name="url" placeholder="Enter Spotify song URL" required>
+            <button type="submit">Download</button>
+        </form>
+        <div id="progress-container">
+            <p id="progress-text">Progress: 0%</p>
+            <progress id="progress-bar" value="0" max="100"></progress>
+        </div>
+        <div id="download-link" style="display: none;">
+            <a href="/get_file">Click to save</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('download-form');
+        const progressText = document.getElementById('progress-text');
+        const progressBar = document.getElementById('progress-bar');
+        const downloadLink = document.getElementById('download-link');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            progressText.innerText = 'Progress: 0%';
+            progressBar.value = 0;
+            downloadLink.style.display = 'none';
+
+            const formData = new FormData(form);
+            const response = await fetch('/download', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                checkProgress();
+            } else {
+                progressText.innerText = 'Error starting download';
+            }
+        });
+
+        async function checkProgress() {
+            const response = await fetch('/progress');
+            const data = await response.json();
+
+            if (data.percentage >= 0) {
+                progressText.innerText = `Progress: ${data.percentage}%`;
+                progressBar.value = data.percentage;
+            }
+
+            if (data.percentage < 100 && data.percentage != -1) {
+                setTimeout(checkProgress, 1000);
+            } else if (data.percentage == 100) {
+                downloadLink.style.display = 'block';
+                progressText.innerText = 'Download Complete!';
+            } else {
+                progressText.innerText = 'Download failed. Please try again.';
+            }
+        }
+    </script>
+</body>
+</html>
