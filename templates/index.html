@@ -18,7 +18,7 @@
             <progress id="progress-bar" value="0" max="100"></progress>
         </div>
         <div id="download-link" style="display: none;">
-            <a href="/get_file">Click to save</a>
+            <a href="/get_file">Download your song</a>
         </div>
     </div>
 
@@ -52,7 +52,7 @@
             const data = await response.json();
 
             if (data.percentage >= 0) {
-                progressText.innerText = `Progress: ${data.percentage}%`;
+                progressText.innerText = `Progress: ${data.status} (${data.percentage}%)`;
                 progressBar.value = data.percentage;
             }
 
@@ -61,8 +61,8 @@
             } else if (data.percentage == 100) {
                 downloadLink.style.display = 'block';
                 progressText.innerText = 'Download Complete!';
-            } else {
-                progressText.innerText = 'Download failed. Please try again.';
+            } else if (data.percentage == -1) {
+                progressText.innerText = data.status; // Display error message
             }
         }
     </script>
